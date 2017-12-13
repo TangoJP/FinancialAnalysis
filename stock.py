@@ -6,13 +6,16 @@ import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
 
+class AbstractStock:
+    pass
+
 class Stock:
     ''' It takes in a company's name (or ticker) and retrieves the market data
     into pandas table. Methods will be used for various analyses of the
     stock performance
     '''
 
-    def __init__(self, comp_name, source='yahoo', start=None, end=None):
+    def __init__(self, comp_name, start=None, end=None):
         ''' Retrieves the 'comp_name' stock information into pandas table.
 
         source : string
@@ -22,9 +25,10 @@ class Stock:
         end: string
             end date for the retrieved info. YYYY-MM-DD format
 
+        *** Currently only supports 'yahoo' as source
         '''
         self.ticker= comp_name
-        self.data_table = web.DataReader(name=self.ticker, data_source=source,
+        self.data_table = web.DataReader(name=self.ticker, data_source='yahoo',
                                         start=start, end=end)
 
         self.data_table['linear_return'] = \
