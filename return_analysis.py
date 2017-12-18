@@ -36,6 +36,21 @@ class ReturnAnalysis(BaseAnalysis):
             window_labels.append(key)
         self._window_labels = window_labels
 
+    def print_info(self):
+        n_points = len(self.data['Close'])
+        n_na = np.sum(self.data['Close'].isnull())
+
+        print('=='*6, '%s Basic Info' % self.ticker, '=='*6)
+        print('Start Date - %s' % self.start_date.strftime("%Y-%m-%d"))
+        print(' End  Date - %s' % self.end_date.strftime("%Y-%m-%d"))
+        print('Number of data points - %d' % n_points)
+        print('Number of missing data points - %d' % n_na)
+
+    def plot(self, figsize=(18, 4)):
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        self.data[self._window_labels].plot(ax=ax, alpha=0.5)
+        return
+
     def hist(self, bins=50, figsize=(18, 4)):
         fig = plt.figure(figsize=figsize)
         num_plots = len(self._window_labels)
@@ -95,6 +110,7 @@ class ReturnAnalysis(BaseAnalysis):
         for i, key in enumerate(self._window_labels):
             stats = {}
             series = self.data[key].dropna()
+            n_points = len(series)
             stats['mean'] = np.mean(series)
             stats['std'] = np.std(series)
             stats['min'] = np.min(series)
@@ -102,9 +118,13 @@ class ReturnAnalysis(BaseAnalysis):
             stats['median'] = np.median(series)
             stats['5_percentile'] = np.percentile(series, 5)
             stats['95_percentile'] = np.percentile(series, 95)
+            stats['n_points'] = n_points
+            stats['frac_positive'] = np.sum(series > 0) / n_points
+            stats['frac_negative'] = np.sum(series < 0) / n_points
             all_stats.append(stats)
         result = pd.DataFrame(all_stats, index=self._window_labels)
         result = result[['median', 'mean', 'std', 'min', 'max',
-                         '5_percentile', '95_percentile']]
+                         '5_percentile', '95_percentile',
+                         'frac_positive', 'frac_negative', 'n_points']]
 
         return result
