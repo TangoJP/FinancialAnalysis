@@ -15,7 +15,7 @@ class Stock:
     stock performance
     '''
 
-    def __init__(self, comp_name, start=None, end=None):
+    def __init__(self, comp_name, start=None, end=None, return_type='log'):
         ''' Retrieves the 'comp_name' stock information into pandas table.
 
         source : string
@@ -30,11 +30,16 @@ class Stock:
         self.ticker= comp_name
         self.data_table = web.DataReader(name=self.ticker, data_source='yahoo',
                                         start=start, end=end)
+        self.return_type = return_type
+        self.start_date = self.data_table.index.min()
+        self.end_date = self.data_table.index.max()
 
-        self.data_table['linear_return'] = \
-            (self.data_table['Close']/self.data_table['Close'].shift(1))-1
-        self.data_table['log_return'] = \
-            np.log(self.data_table['Close']/self.data_table['Close'].shift(1))
+        if return_type == 'linear':
+            self.data_table['daily_return'] = \
+                (self.data_table['Close']/self.data_table['Close'].shift(1))-1
+        else:
+            self.data_table['daily_return'] = \
+                np.log(self.data_table['Close']/self.data_table['Close'].shift(1))
 
     #  PLOTTING SIMPLE DATA
     # plot historical price info
