@@ -15,7 +15,7 @@ class Stock:
     stock performance
     '''
 
-    def __init__(self, comp_name, start=None, end=None, return_type='log'):
+    def __init__(self, comp_name, start=None, end=None):
         ''' Retrieves the 'comp_name' stock information into pandas table.
 
         source : string
@@ -30,16 +30,8 @@ class Stock:
         self.ticker= comp_name
         self.data_table = web.DataReader(name=self.ticker, data_source='yahoo',
                                         start=start, end=end)
-        self.return_type = return_type
         self.start_date = self.data_table.index.min()
         self.end_date = self.data_table.index.max()
-
-        if return_type == 'linear':
-            self.data_table['daily_return'] = \
-                (self.data_table['Close']/self.data_table['Close'].shift(1))-1
-        else:
-            self.data_table['daily_return'] = \
-                np.log(self.data_table['Close']/self.data_table['Close'].shift(1))
 
     #  PLOTTING SIMPLE DATA
     # plot historical price info
@@ -120,36 +112,36 @@ class Stock:
     # METHODS FOR STOCK PRICCE STATS
     # calculates daily return with linear, log scale, or percentage change
 
-    def return_var(self, scale='log'):
-        if scale == 'linear':
-            return np.nanvar(self.data_table['linear_return'])
-        elif scale == 'log':
-            return np.nanvar(self.data_table['log_return'])
-        else:
-            print("ERROR: Scale must be set to 'linear' or 'log'")
+    #def return_var(self, scale='log'):
+    #    if scale == 'linear':
+    #        return np.nanvar(self.data_table['linear_return'])
+    #    elif scale == 'log':
+    #        return np.nanvar(self.data_table['log_return'])
+    #    else:
+    #        print("ERROR: Scale must be set to 'linear' or 'log'")
 
-    def return_std(self, scale='log'):
-        if scale == 'linear':
-            return np.nanstd(self.data_table['linear_return'])
-        elif scale == 'log':
-            return np.nanstd(self.data_table['log_return'])
-        else:
-            print("ERROR: Scale must be set to 'linear' or 'log'")
+    #def return_std(self, scale='log'):
+    #    if scale == 'linear':
+    #        return np.nanstd(self.data_table['linear_return'])
+    #    elif scale == 'log':
+    #        return np.nanstd(self.data_table['log_return'])
+    #    else:
+    #        print("ERROR: Scale must be set to 'linear' or 'log'")
 
-    def daily_return_hist(self, scale='log', bins=50, ax=None):
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(6, 3))
-        if scale == 'linear':
-            ax.hist(self.data_table['linear_return'].dropna(), bins=bins)
-            ax.set_xlabel('Daily Linear Return on %s' % self.ticker)
-            ax.set_ylabel('Frequency in number of days')
-        elif scale == 'log':
-            ax.hist(self.data_table['log_return'].dropna(), bins=bins)
-            ax.set_xlabel('Daily Log Return on %s' % self.ticker)
-            ax.set_ylabel('Frequency in number of days')
-        elif scale == 'percentage':
-            ax.hist(self.data_table['linear_return'].dropna(), bins=bins)
-            ax.set_xlabel('Daily Percentage Change of %s' % self.ticker)
-            ax.set_ylabel('Frequency in number of days')
-        else:
-            print("ERROR: Scale must be set to 'linear', 'log', or 'percentage'")
+    #def daily_return_hist(self, scale='log', bins=50, ax=None):
+    #    if ax is None:
+    #        fig, ax = plt.subplots(1, 1, figsize=(6, 3))
+    #    if scale == 'linear':
+    #        ax.hist(self.data_table['linear_return'].dropna(), bins=bins)
+    #        ax.set_xlabel('Daily Linear Return on %s' % self.ticker)
+    #        ax.set_ylabel('Frequency in number of days')
+    #    elif scale == 'log':
+    #        ax.hist(self.data_table['log_return'].dropna(), bins=bins)
+    #        ax.set_xlabel('Daily Log Return on %s' % self.ticker)
+    #        ax.set_ylabel('Frequency in number of days')
+    #    elif scale == 'percentage':
+    #        ax.hist(self.data_table['linear_return'].dropna(), bins=bins)
+    #        ax.set_xlabel('Daily Percentage Change of %s' % self.ticker)
+    #        ax.set_ylabel('Frequency in number of days')
+    #    else:
+    #        print("ERROR: Scale must be set to 'linear', 'log', or 'percentage'")

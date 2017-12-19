@@ -1,20 +1,20 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import stock
 from stock import Stock
 
 class BaseAnalysis:
-    def __init__(self, stock, start=None, end=None, return_type='log'):
+    def __init__(self, stock, start=None, end=None):
         if isinstance(stock, Stock):
             if (start is not None) and (end is not None):
                 '''Raise Some exception that start/end dates were input'''
                 print('Start/End won\'t be reset')
             stock = stock
-            return_type = stock.return_type
 
         elif isinstance(stock, str):
             '''Include code to read in the Stock Object'''
-            stock = Stock(stock, start=start, end=end, return_type=return_type)
+            stock = Stock(stock, start=start, end=end)
             pass
         else:
             '''raise an InvalidInputType exception'''
@@ -23,7 +23,6 @@ class BaseAnalysis:
 
         self.ticker = stock.ticker
         self.data = stock.data_table
-        self.return_type = return_type
         self.start_date = self.data.index.min()
         self.end_date = self.data.index.max()
 
