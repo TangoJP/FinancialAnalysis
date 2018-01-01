@@ -1,5 +1,6 @@
 # this class implements various analyses for a company stcok
 
+import os
 import scipy.stats as scs
 import numpy as np
 import pandas as pd
@@ -27,9 +28,21 @@ class Stock:
 
         *** Currently only supports 'yahoo' as source
         '''
-        self.ticker= comp_name
-        self.data_table = web.DataReader(name=self.ticker, data_source='yahoo',
-                                        start=start, end=end)
+        if (isinstance(comp_name, str)) and ('.csv' in comp_name):
+            data = pd.read_csv(comp_name)
+            data['Date'] = pd.to_datetime(data['Date'])
+            data_table = data.set_index('Date')
+            data_table = data_table.replace('null', np.NaN)
+            #data_table = data_table.dropna()
+            self.data_table = data_table.astype('float')
+            ticker = os.path.split(comp_name)[1]
+            self.ticker = ticker.replace('.csv', '')
+        else:
+            self.ticker = comp_name
+            self.data_table = web.DataReader(name=self.ticker,
+                                             data_source='yahoo',
+                                             start=start,
+                                             end=end)
         self.start_date = self.data_table.index.min()
         self.end_date = self.data_table.index.max()
 

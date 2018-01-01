@@ -15,7 +15,7 @@ class BaseAnalysis:
         elif isinstance(stock, str):
             '''Include code to read in the Stock Object'''
             stock = Stock(stock, start=start, end=end)
-            pass
+            
         else:
             '''raise an InvalidInputType exception'''
             print('Invalid stock type')
