@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import math
+import matplotlib.pyplot as plt
+from matplotlib.finance import candlestick2_ohlc
 from bokeh.plotting import figure, show, output_file
 from bokeh.io import output_notebook
 
@@ -48,8 +49,21 @@ def aggregate_periods(data, period=20):
     aggregated = aggregated[['time', 'open', 'high', 'low', 'close']].set_index('time')
     return aggregated
 
+def plot_candlestick1(data, ax=None, title_label=None):
+    '''
+    matplotlib implementation.
+    '''
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(16,8))
+    candlestick2_ohlc(ax, data['open'], data['high'], data['low'], data['close'],
+                      width=1)
+
+    return
+
 def plot_candlestick(data, title_label=None):
     '''
+    bokeh implementation
+
     ### ***NEED to recalibrate the w parameter properly ####
     '''
 

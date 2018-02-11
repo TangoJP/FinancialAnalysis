@@ -57,19 +57,76 @@ class EMA(MA):
 
 class MACollection:
     def __init__(self, series, type_='simple', periods=[9, 20]):
+        self.series_name = series.name
+        self.data = series.to_frame()
         self.periods = periods
-        self.moving_averages = []
+        self.moving_average_labels = []
         self.moving_average_type = type_
         if type_ == 'exponential':
             self.MAmodel = EMA
         else:
             self.MAmodel = SMA
         for period in periods:
-            self.moving_averages.append(self.MAmodel(series, period=period))
+            ma = self.MAmodel(series, period=period)
+            self.moving_average_labels.append(ma.ma_name)
+            self.data[ma.ma_name] = ma.data[ma.ma_name]
 
     def plot(self, ax=None):
         if ax is None:
             fig, ax = plt.subplots(1, 1, figsize=(6, 3))
-        for ma in self.moving_averages:
-            ma.plot(ax=ax)
+        data_to_plot = [self.series_name] + self.moving_average_labels
+        self.data[data_to_plot].plot(ax=ax)
         # add code here for figure attributes
+
+    def getCrosses(self):
+        if len(self.periods) != 2:
+            print('Error: Only two moving averages can be compared at a time')
+            return
+        short_period = min(self.periods)
+        long_period = max(self.periods)
+        if self.MAmodel == EMA:
+            short_label = 'EMA' + str(short_period)
+            long_label = 'EMA' + str(long_period)
+        else:
+            short_label = 'SMA' + str(short_period)
+            long_label = 'SMA' + str(long_period)
+
+        self.short_ma_label = short_label
+        self.long_ma_label = long_label
+
+        # Get difference between short and long moving acerages
+        self.data['ma_difference'] = \
+                        self.data[short_label] - self.data[long_label]
+        self.data['cross'] = 0
+        for i in range(1, len(self.data)):
+            diff_0 = self.data.loc[self.data.index[i-1], 'ma_difference']
+            diff_1 = self.data.loc[self.data.index[i], 'ma_difference']
+            if (diff_0 < 0) and (diff_1 > 0):    # when shorter > longer happens
+                self.data.loc[self.data.index[i], 'cross'] = 1
+            elif (diff_0 > 0) and (diff_1 < 0):
+                self.data.loc[self.data.index[i], 'cross'] = -1
+
+        return
+
+    def plotWithCrosses(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(6, 3))
+        self.plot(ax=ax)
+        self.getCrosses()
+        goldenX = (self.data['cross'] == 1)
+        deathX = (self.data['cross'] == -1)
+        for ind in self.data[goldenX].index:
+            y = self.data.loc[ind, self.long_ma_label] - 0.6
+            dx = 0
+            dy = 0.3
+            ax.arrow(ind, y, dx, dy, color='green',
+                     head_width=0.05, head_length=0.2)
+
+        for ind in self.data[deathX].index:
+            y = self.data.loc[ind, self.short_ma_label] + 0.6
+            dx = 0
+            dy = -0.3
+            ax.arrow(ind, y, dx, dy, color='red',
+                     head_width=0.05, head_length=0.2,)
+
+        return
