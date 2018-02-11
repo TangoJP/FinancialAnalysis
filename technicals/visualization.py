@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import bokeh
 import math
 
+# ***Most likely, do not implement a single candlestick object
+# ***and simply use the group object below
 class CandleStick:
     '''
     Implementation of a single candlestick.
@@ -18,7 +20,7 @@ class CandleStick:
         self.boxlength_ = abs(self.close_ - self.open_)
         self.range_ = self.high_ - self.low_
 
-class CandleStickGroup:
+class CandleSticks:
     '''
     A group of CandleSticks
     '''
@@ -32,6 +34,10 @@ class CandleStickGroup:
         period : int
             number of periods to aggregate
         '''
+        fields = ['open', 'close', 'high', 'low',
+                  'uptick', 'downpick', 'boxlength', 'range']
+        candlesticks = pd.DataFrame(columns=fields)
+
         # Aggregate specified number of periods
 
         # Create a CandleStick object for each aggregated period
