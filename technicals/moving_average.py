@@ -23,7 +23,6 @@ class MA:
         ax.plot(self.data.index.date, self.data[self.ma_name], color=color2)
         ax.set_ylabel('%s SMA' % self.ma_name)
 
-
 class SMA(MA):
     '''
     Simple moving average.
@@ -55,3 +54,22 @@ class EMA(MA):
 
     def plot(self, ax=None, color1='skyblue', color2='salmon'):
         super().plot(ax=ax, color1=color1, color2=color2)
+
+class MACollection:
+    def __init__(self, series, type_='simple', periods=[9, 20]):
+        self.periods = periods
+        self.moving_averages = []
+        self.moving_average_type = type_
+        if type_ == 'exponential':
+            self.MAmodel = EMA
+        else:
+            self.MAmodel = SMA
+        for period in periods:
+            self.moving_averages.append(self.MAmodel(series, period=period))
+
+    def plot(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(6, 3))
+        for ma in self.moving_averages:
+            ma.plot(ax=ax)
+        # add code here for figure attributes
