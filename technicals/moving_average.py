@@ -12,8 +12,7 @@ class MA:
         period : int
             number of periods to average
         '''
-        series_name = series.name
-        self.series_name = series_name
+        self.series_name = series.name
         self.data = series.to_frame()
 
     def plot(self, ax=None, color1='skyblue', color2='salmon'):
@@ -29,12 +28,11 @@ class SMA(MA):
     '''
     def __init__(self, series, period=20):
         super().__init__(series=series, period=period)
-        series_name = series.name
         label = 'SMA' + str(period)
 
         self.ma_name = label
         self.data[label] = \
-                self.data[series_name].rolling(window=period).mean()
+                self.data[self.series_name].rolling(window=period).mean()
 
     def plot(self, ax=None, color1='skyblue', color2='salmon'):
         super().plot(ax=ax, color1=color1, color2=color2)

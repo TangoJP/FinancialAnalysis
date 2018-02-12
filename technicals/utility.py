@@ -33,7 +33,7 @@ def aggregate_periods(data, period=20):
 
     counter = 0
     while counter < num_rows:
-        subset = data.iloc[counter:(counter+period-1)]
+        subset = data.iloc[counter:(counter + period - 1)]
         period_data = get_period_data(subset)
         times.append(period_data['time'])
         opens.append(period_data['open'])
