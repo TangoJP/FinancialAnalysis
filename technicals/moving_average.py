@@ -66,6 +66,7 @@ class MACollection:
         '''
         self.series_name = series.name
         self.data = series.to_frame()
+        self.data['numerical_index'] = [i for i in range(len(self.data))]
         self.periods = periods
         self.moving_average_labels = []
         self.moving_average_type = type_
@@ -78,13 +79,6 @@ class MACollection:
             self.moving_average_labels.append(ma.ma_name)
             self.data[ma.ma_name] = ma.data[ma.ma_name]
         self.crosses_added = False
-
-    def plot1(self, ax=None):
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(6, 3))
-        data_to_plot = [self.series_name] + self.moving_average_labels
-        self.data[data_to_plot].plot(ax=ax)
-        # add code here for figure attributes
 
     def getCrosses(self):
         if len(self.periods) != 2:
@@ -117,6 +111,101 @@ class MACollection:
         self.crosses_added = True
         return
 
+    def plot(self, p=None, title=None):
+        if p is None:
+            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+            p = figure(title=title,
+                       tools=TOOLS, plot_width=800,)
+            p.grid.grid_line_alpha=0.3
+            p.xaxis.axis_label = 'Date'
+            p.yaxis.axis_label = 'Price'
+            p.xaxis.major_label_orientation = math.pi/4
+
+        # This will be used to skip the datetime gap by using numerical index
+        x_replacement_dictionary = {
+                            i : date.strftime('%Y-%m-%d %-H:%M')
+                            for i, date in enumerate(self.data.index)}
+        p.xaxis.major_label_overrides = x_replacement_dictionary
+
+        # Plot each
+        data_to_plot = [self.series_name] + self.moving_average_labels
+        colors = default_palette[len(data_to_plot)]
+        for i, data_name in enumerate(data_to_plot):
+            d = self.data[data_name]
+            p.line(self.data['numerical_index'], d,
+                   legend=data_name, color=colors[i])
+
+        output_notebook()
+        show(p)
+
+    def plotWithCrosses(self, p=None, title=None):
+        '''bokeh implementation'''
+        if not self.crosses_added:
+            self.getCrosses()
+
+        if p is None:
+            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+            p = figure(title=title,
+                       tools=TOOLS, plot_width=800,)
+            p.grid.grid_line_alpha=0.3
+            #p.xaxis.axis_label = 'Date'
+            p.yaxis.axis_label = 'Price'
+            p.xaxis.major_label_orientation = math.pi/4
+
+        # This will be used to skip the gap by using numerical index
+        x_replacement_dictionary = {
+                            i : date.strftime('%Y-%m-%d %-H:%M')
+                            for i, date in enumerate(self.data.index)}
+        p.xaxis.major_label_overrides = x_replacement_dictionary
+
+        # Plot the MAs
+        data_to_plot = [self.series_name] + self.moving_average_labels
+        colors = default_palette[len(data_to_plot)]
+        for i, data_name in enumerate(data_to_plot):
+            d = self.data[data_name]
+            p.line(self.data['numerical_index'], d,
+                   legend=data_name, color=colors[i])
+
+        # Plot the arrows indicating crosses
+        goldenX = (self.data['cross'] == 1)
+        deathX = (self.data['cross'] == -1)
+        for ind in self.data[goldenX].index:
+            p.add_layout(
+                Arrow(
+                    end=NormalHead(size=10,
+                            fill_color="yellowgreen",
+                            line_color="yellowgreen"
+                ),
+                line_color="yellowgreen", line_width=2,
+                x_start=self.data.loc[ind, 'numerical_index'].astype('float'),
+                x_end=self.data.loc[ind, 'numerical_index'].astype('float'),
+                y_start=self.data.loc[ind, self.long_ma_label] - 0.5,
+                y_end=self.data.loc[ind, self.long_ma_label] - 0.2))
+
+        for ind in self.data[deathX].index:
+            p.add_layout(
+                Arrow(
+                    end=NormalHead(size=10,
+                            fill_color="salmon",
+                            line_color="salmon"
+                ),
+                line_color="salmon", line_width=2,
+                x_start=self.data.loc[ind, 'numerical_index'].astype('float'),
+                x_end=self.data.loc[ind, 'numerical_index'].astype('float'),
+                y_start=self.data.loc[ind, self.long_ma_label] + 0.5,
+                y_end=self.data.loc[ind, self.long_ma_label] + 0.2))
+
+        output_notebook()
+        show(p)
+        return
+
+    def plot1(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(6, 3))
+        data_to_plot = [self.series_name] + self.moving_average_labels
+        self.data[data_to_plot].plot(ax=ax)
+        # add code here for figure attributes
+
     def plotWithCrosses1(self, ax=None):
         '''
         matplotlib implementation
@@ -142,102 +231,4 @@ class MACollection:
             ax.arrow(ind, y, dx, dy, color='red',
                      head_width=0.05, head_length=0.2,)
 
-        return
-
-    def plot(self, p=None, title=None):
-        if p is None:
-            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-            p = figure(title=title,
-                       tools=TOOLS, plot_width=800,)
-            p.grid.grid_line_alpha=0.3
-            p.xaxis.axis_label = 'Date'
-            p.yaxis.axis_label = 'Price'
-            p.xaxis.major_label_orientation = math.pi/4
-
-        # This will be used to skip the gap by using numerical index
-        x_replacement_dictionary = {
-                            i : date.strftime('%Y-%m-%d %-H:%M')
-                            for i, date in enumerate(self.data.index)}
-        #p.xaxis.major_label_overrides = x_replacement_dictionary
-
-        data_to_plot = [self.series_name] + self.moving_average_labels
-        colors = default_palette[len(data_to_plot)]
-
-        # Create numerical index so that the xaxis labels can be replaces as above
-        numerical_index = self.data.reset_index().index
-        for i, data_name in enumerate(data_to_plot):
-            d = self.data[data_name]
-            p.line(numerical_index, d, legend=data_name, color=colors[i])
-
-        output_notebook()
-        show(p)
-
-    def plotWithCrosses(self, p=None, title=None):
-        '''bokeh implementation'''
-        if not self.crosses_added:
-            self.getCrosses()
-
-        if p is None:
-            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-            p = figure(title=title,
-                       tools=TOOLS, plot_width=800,)
-            p.grid.grid_line_alpha=0.3
-            #p.xaxis.axis_label = 'Date'
-            p.yaxis.axis_label = 'Price'
-            p.xaxis.major_label_orientation = math.pi/4
-
-        # This will be used to skip the gap by using numerical index
-        x_replacement_dictionary = {
-                            i : date.strftime('%Y-%m-%d %-H:%M')
-                            for i, date in enumerate(self.data.index)}
-        p.xaxis.major_label_overrides = x_replacement_dictionary
-        dt2num_dict = {v:k for k, v in x_replacement_dictionary.items()}
-
-        def dt2num_index(dt_ind):
-            str_ind = dt_ind.strftime('%Y-%m-%d %-H:%M')
-            return dt2num_dict[str_ind]
-
-        # Plot the MAs
-        data_to_plot = [self.series_name] + self.moving_average_labels
-        colors = default_palette[len(data_to_plot)]
-
-        # Create numerical index so that the xaxis labels can be replaces as above
-        numerical_index = self.data.reset_index().index
-        for i, data_name in enumerate(data_to_plot):
-            d = self.data[data_name]
-            p.line(numerical_index, d, legend=data_name, color=colors[i])
-
-        # Plot the arrows indicating crosses
-        goldenX = (self.data['cross'] == 1)
-        deathX = (self.data['cross'] == -1)
-        for ind in self.data[goldenX].index:
-            num_ind = dt2num_index(ind)
-            p.add_layout(
-                Arrow(
-                    end=NormalHead(size=10,
-                            fill_color="yellowgreen",
-                            line_color="yellowgreen"
-                ),
-                line_color="yellowgreen", line_width=2,
-                x_start=num_ind,
-                x_end=num_ind,
-                y_start=self.data.loc[ind, self.long_ma_label] - 0.5,
-                y_end=self.data.loc[ind, self.long_ma_label] - 0.2))
-
-        for ind in self.data[deathX].index:
-            num_ind = dt2num_index(ind)
-            p.add_layout(
-                Arrow(
-                    end=NormalHead(size=10,
-                            fill_color="salmon",
-                            line_color="salmon"
-                ),
-                line_color="salmon", line_width=2,
-                x_start=num_ind,
-                x_end=num_ind,
-                y_start=self.data.loc[ind, self.long_ma_label] + 0.5,
-                y_end=self.data.loc[ind, self.long_ma_label] + 0.2))
-
-        output_notebook()
-        show(p)
         return
