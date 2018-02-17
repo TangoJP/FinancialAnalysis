@@ -13,6 +13,9 @@ Some preliminary projects
 <i>Bollinger Bands</i><br>
 ![](./images/bollinger.png)
 <br>
-<i></i><br>
+<i>MACD</i><br>
 ![](./images/macd.png)
+<br>
+<i>Moving Average Crosses</i><br>
+![](./images/ma_crosses.png)
 <br>
