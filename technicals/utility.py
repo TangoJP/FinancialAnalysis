@@ -3,8 +3,12 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 from matplotlib.finance import candlestick2_ohlc
+from bokeh.layouts import gridplot
+from bokeh.models import Arrow, OpenHead, NormalHead, VeeHead
 from bokeh.plotting import figure, show, output_file
 from bokeh.io import output_notebook
+from bokeh.palettes import Colorblind as default_palette
+#from moving_average import MA, SMA, MACollection
 
 ### The following code assumes the data contains columns named time, open, high,
 ### low, and close
@@ -91,5 +95,13 @@ def plot_candlestick(data, title_label=None):
     p.vbar(df.index[dec], w, df.open[dec], df.close[dec], fill_color="#F2583E", line_color="black")
 
     output_notebook()#"candlestick.html", title="candlestick.py example")
-
     show(p)
+
+def create_default_panel(title=None, plot_width=800):
+    TOOLS = "pan,wheel_zoom,box_zoom,zoom_in,zoom_out,hover,reset,save"
+    p = figure(title=title,
+               tools=TOOLS, plot_width=plot_width)
+    p.grid.grid_line_alpha=0.3
+    p.xaxis.major_label_orientation = math.pi/4
+
+    return p

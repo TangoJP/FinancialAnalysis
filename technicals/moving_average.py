@@ -8,6 +8,7 @@ from bokeh.models import Arrow, OpenHead, NormalHead, VeeHead
 from bokeh.plotting import figure, show, output_file
 from bokeh.io import output_notebook
 from bokeh.palettes import Colorblind as default_palette
+from utility import create_default_panel
 
 class MA:
     def __init__(self, series, period=20):
@@ -111,15 +112,10 @@ class MACollection:
         self.crosses_added = True
         return
 
-    def plot(self, p=None, title=None):
+    def plot(self, p=None, title=None, plot_width=800):
         if p is None:
-            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-            p = figure(title=title,
-                       tools=TOOLS, plot_width=800,)
-            p.grid.grid_line_alpha=0.3
-            p.xaxis.axis_label = 'Date'
-            p.yaxis.axis_label = 'Price'
-            p.xaxis.major_label_orientation = math.pi/4
+            p = create_default_panel(title=title, plot_width=plot_width)
+        p.yaxis.axis_label = 'Price'
 
         # This will be used to skip the datetime gap by using numerical index
         x_replacement_dictionary = {
@@ -144,7 +140,7 @@ class MACollection:
             self.getCrosses()
 
         if p is None:
-            TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+            TOOLS = "pan,wheel_zoom,box_zoom,zoom_in,zoom_out,hover,reset,save"
             p = figure(title=title,
                        tools=TOOLS, plot_width=800,)
             p.grid.grid_line_alpha=0.3
