@@ -105,3 +105,52 @@ def create_default_panel(title=None, plot_width=800):
     p.xaxis.major_label_orientation = math.pi/4
 
     return p
+
+def eval_metric_performance(series, metric_col, eval_periods=[1,5,10]):
+    '''
+    INPUTS:
+    =======
+    series : pd.Series
+        Vector containing the closing price, opening price, etc.
+    metric_col : pd.Series
+        Vector containing the metric information. +1 indicates buy and -1
+        indicates sell signal.
+    eval_periods : list/array
+        A list/array containing the length of period to evaluate performance for.
+    '''
+    df = pd.concat([series, metric_col], axis=1).reset_index()
+    series_name = series.name
+    metric_name = metric_col.name
+
+    for period in eval_periods:
+        signal_indices = [i
+            for i in df[(df[metric_name] == 1) | (df[metric_name] == -1)].index
+            if (i+period) in df.index]
+        return_indices = [i+period
+            for i in signal_indices
+            if (i+period) in df.index]
+
+        period_returns = 100*((np.array(df.loc[return_indices, series_name])\
+                            / np.array(df.loc[signal_indices, series_name])) -1)
+
+        col_label = str(period) + 'period_return'
+        df[col_label] = 0
+        df.loc[signal_indices, col_label] = period_returns
+
+    return df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    pass

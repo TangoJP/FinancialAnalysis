@@ -134,7 +134,7 @@ class MACollection:
         output_notebook()
         show(p)
 
-    def plotWithCrosses(self, p=None, title=None):
+    def plotWithCrosses(self, p=None, title=None, plot_width=800):
         '''bokeh implementation'''
         if not self.crosses_added:
             self.getCrosses()
@@ -142,7 +142,7 @@ class MACollection:
         if p is None:
             TOOLS = "pan,wheel_zoom,box_zoom,zoom_in,zoom_out,hover,reset,save"
             p = figure(title=title,
-                       tools=TOOLS, plot_width=800,)
+                       tools=TOOLS, plot_width=plot_width)
             p.grid.grid_line_alpha=0.3
             #p.xaxis.axis_label = 'Date'
             p.yaxis.axis_label = 'Price'
