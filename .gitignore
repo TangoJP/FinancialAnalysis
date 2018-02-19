@@ -1,3 +1,4 @@
 stock/data/*
 technicals/fx_data/*
-
+stocks/*
+**/.DS_Store
