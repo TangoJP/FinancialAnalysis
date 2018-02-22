@@ -64,7 +64,8 @@ def plot_candlestick1(data, ax=None, title_label=None):
 
     return
 
-def plot_candlestick(data, p=None, title_label=None):
+def plot_candlestick(data, p=None, title_label=None, show_plot=True,
+                     plot_height=300, plot_width=800):
     '''
     bokeh implementation
 
@@ -72,29 +73,44 @@ def plot_candlestick(data, p=None, title_label=None):
     '''
 
     # Adopted from https://bokeh.pydata.org/en/latest/docs/gallery/candlestick.html
-    df = data
+    if 'numerical_index' not in data.columns:
+        data.loc[:, 'numerical_index'] = [i for i in range(len(data))]
+    df = data[['numerical_index', 'open', 'high', 'low', 'close']]
 
     # Get boolean increase or decrease in the level for each row
     inc = df.close > df.open
     dec = df.open > df.close
 
     # set bar width to 60% of time interval in milliseconds
-    time0 = data.index[0]
-    time1 = data.index[1]
+    time0 = data.numerical_index[0]
+    time1 = data.numerical_index[1]
     time_interval = time1 - time0
-    w = 0.6 * time_interval.seconds * 1000
+    w = 0.6*time_interval #0.6 * time_interval.seconds * 1000
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 
     if p is None:
-        p = create_default_panel()
+        p = create_default_panel(plot_height=plot_height, plot_width=plot_width)
 
-    p.segment(df.index, df.high, df.index, df.low, color="black")
-    p.vbar(df.index[inc], w, df.open[inc], df.close[inc], fill_color="#D5E1DD", line_color="black")
-    p.vbar(df.index[dec], w, df.open[dec], df.close[dec], fill_color="#F2583E", line_color="black")
+    p.segment(df.numerical_index, df.high,
+              df.numerical_index, df.low, color="black")
+    p.vbar(df.numerical_index[inc], w, df.open[inc], df.close[inc],
+                                    fill_color="#D5E1DD", line_color="black")
+    p.vbar(df.numerical_index[dec], w, df.open[dec], df.close[dec],
+                                    fill_color="#F2583E", line_color="black")
 
-    output_notebook()#"candlestick.html", title="candlestick.py example")
-    show(p)
+    # This will skip the datetime gap by using numerical index
+    x_replacement_dictionary = {
+                        i : date.strftime('%Y-%m-%d %-H:%M')
+                        for i, date in enumerate(data.index)}
+    p.xaxis.major_label_overrides = x_replacement_dictionary
+
+    if show_plot:
+        output_notebook()#"candlestick.html", title="candlestick.py example")
+        show(p)
+        return
+    else:
+        return p
 
 def create_default_panel(title=None, plot_height=300, plot_width=800):
     TOOLS = "pan,wheel_zoom,box_zoom,zoom_in,zoom_out,hover,reset,save"
