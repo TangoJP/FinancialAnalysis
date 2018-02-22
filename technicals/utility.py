@@ -64,7 +64,7 @@ def plot_candlestick1(data, ax=None, title_label=None):
 
     return
 
-def plot_candlestick(data, title_label=None):
+def plot_candlestick(data, p=None, title_label=None):
     '''
     bokeh implementation
 
@@ -86,9 +86,8 @@ def plot_candlestick(data, title_label=None):
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 
-    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=800, title=title_label)
-    p.xaxis.major_label_orientation = math.pi/4
-    p.grid.grid_line_alpha=0.3
+    if p is None:
+        p = create_default_panel()
 
     p.segment(df.index, df.high, df.index, df.low, color="black")
     p.vbar(df.index[inc], w, df.open[inc], df.close[inc], fill_color="#D5E1DD", line_color="black")
@@ -97,10 +96,12 @@ def plot_candlestick(data, title_label=None):
     output_notebook()#"candlestick.html", title="candlestick.py example")
     show(p)
 
-def create_default_panel(title=None, plot_width=800):
+def create_default_panel(title=None, plot_height=300, plot_width=800):
     TOOLS = "pan,wheel_zoom,box_zoom,zoom_in,zoom_out,hover,reset,save"
     p = figure(title=title,
-               tools=TOOLS, plot_width=plot_width)
+               tools=TOOLS,
+               plot_height=plot_height,
+               plot_width=plot_width)
     p.grid.grid_line_alpha=0.3
     p.xaxis.major_label_orientation = math.pi/4
 
@@ -139,18 +140,40 @@ def eval_metric_performance(series, metric_col, eval_periods=[1,5,10]):
 
     return df
 
+def plot_performance_mpl(df, metric_col, bins=10, eval_periods=[1,5,10],
+                         colors=['skyblue', 'salmon']):
+    num_periods = len(eval_periods)
+    num_cols = 6
+    if (num_periods % 5) == 0:
+        num_rows = num_periods / num_cols
+    else:
+        num_rows = (num_periods // num_cols) + 1
 
+    color1 = colors[0]
+    color2 = colors[1]
+    fig1 = plt.figure(figsize=(4*num_cols, 4* num_rows))
+    fig2 = plt.figure(figsize=(4*num_cols, 4* num_rows))
+    for i, period in enumerate(eval_periods):
+        col_label = str(period) + 'period_return'
 
+        ax1 = fig1.add_subplot(num_rows, num_cols, i+1)
+        golden_return = df[df[metric_col] == 1].loc[:, col_label]
+        golden_return.plot(kind='hist', bins=bins, color=color1, alpha=0.6, ax=ax1)
+        bound1 = 1.1*max(abs(max(golden_return)), abs(min(golden_return)))
+        ax1.set_title(col_label)
+        ax1.set_xlabel("% return")
+        ax1.set_ylabel('Frequency')
+        ax1.set_xlim([-bound1, bound1])
+        plt.tight_layout()
 
+        ax2 = fig2.add_subplot(num_rows, num_cols, i+1)
+        death_return = df[df[metric_col] == -1].loc[:, col_label]
+        death_return.plot(kind='hist', bins=bins, color=color2, alpha=0.6, ax=ax2)
+        bound2 = 1.1*max(abs(max(death_return)), abs(min(death_return)))
+        ax2.set_title(col_label)
+        ax2.set_xlabel("% return")
+        ax2.set_ylabel('Frequency')
+        ax2.set_xlim([-bound2, bound2])
+        plt.tight_layout()
 
-
-
-
-
-
-
-
-
-
-
-    pass
+    return
