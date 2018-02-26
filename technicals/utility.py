@@ -173,6 +173,7 @@ def plot_performance_mpl(df, metric_col, bins=10, eval_periods=[1,5,10],
         col_label = str(period) + 'period_return'
 
         ax1 = fig1.add_subplot(num_rows, num_cols, i+1)
+        ax1.axvline(x=0, ls=':', color='0.7')
         golden_return = df[df[metric_col] == 1].loc[:, col_label]
         golden_return.plot(kind='hist', bins=bins, color=color1, alpha=0.6, ax=ax1)
         bound1 = 1.1*max(abs(max(golden_return)), abs(min(golden_return)))
@@ -183,6 +184,7 @@ def plot_performance_mpl(df, metric_col, bins=10, eval_periods=[1,5,10],
         plt.tight_layout()
 
         ax2 = fig2.add_subplot(num_rows, num_cols, i+1)
+        ax2.axvline(x=0, ls=':', color='0.7')
         death_return = df[df[metric_col] == -1].loc[:, col_label]
         death_return.plot(kind='hist', bins=bins, color=color2, alpha=0.6, ax=ax2)
         bound2 = 1.1*max(abs(max(death_return)), abs(min(death_return)))
@@ -192,4 +194,13 @@ def plot_performance_mpl(df, metric_col, bins=10, eval_periods=[1,5,10],
         ax2.set_xlim([-bound2, bound2])
         plt.tight_layout()
 
+        print('='*5, '%s' % col_label, '='*15)
+        print('Golden Cross Return (%%): %.2f +/- %.2f' \
+                            % (np.mean(golden_return), np.std(golden_return)))
+        print('Death  Cross Return (%%): %.2f +/- %.2f' \
+                            % (np.mean(death_return), np.std(death_return)))
+    print('='*5, 'Numer of Cases for %s' % metric_col, '='*5)
+    print('Total Numbe of Periods: %d' % len(df))
+    print('Number of Golden Crosses: %d' % len(golden_return))
+    print('Number of Golden Crosses: %d' % len(death_return))
     return
